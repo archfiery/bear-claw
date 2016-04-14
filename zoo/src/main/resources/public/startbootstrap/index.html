@@ -24,9 +24,70 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Dagre D3 -->
+    <!-- https://gdagre-d3/dist/ithub.com/cpettitt/dagre-d3 -->
+    <script src="http://d3js.org/d3.v3.js"></script>
+    <script src="http://cpettitt.github.io/project/graphlib-dot/v0.5.2/graphlib-dot.js"></script>
+    <script src="js/libs/dagre-d3.js"></script>
+
+    <style>
+        svg {
+            border: 1px solid #999;
+            overflow: hidden;
+        }
+        .node {
+            white-space: nowrap;
+        }
+        .node rect,
+        .node circle,
+        .node ellipse {
+        stroke: #333;
+        fill: #fff;
+        stroke-width: 1.5px;
+        }
+        .cluster rect {
+            stroke: #333;
+            fill: #000;
+            fill-opacity: 0.1;
+            stroke-width: 1.5px;
+        }
+        .edgePath path.path {
+            stroke: #333;
+            stroke-width: 1.5px;
+            fill: none;
+        }
+    </style>
+
+    <style>
+        h1, h2 {
+            color: #333;
+        }
+
+        textarea {
+            width: 800px;
+        }
+
+        label {
+            margin-top: 1em;
+            display: block;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+
+
+
 </head>
 
-<body>
+<body onload="tryDraw();">
 
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -70,10 +131,10 @@
             <div class="col-md-8">
                 <!--<img class="img-responsive img-rounded" src="http://placehold.it/900x350" alt="">-->
                 <div class="form-group">
-                    <label for="content">To use this demo, select the type of chemistry you would like to analyse (below), enter some chemical text and click the 'Process Text' button </label> <br />
-                    <br />
-                    <label><input type="radio" name="Organic"> Organic </label>
-                    <label><input type="radio" name="Atomspheric"/> Atomspheric </label>
+                    <label for="content">To use this demo, select the type of chemistry you would like to analyse (below), enter some chemical text and click the 'Process Text' button </label>
+
+                    <label><input type="radio" name="optradio">Organic</label>
+                    <label><input type="radio" name="optradio"/>Atomspheric</label>
                     <textarea type="form-control vresize" class="form-control" rows="15" id="content">To a stirred solution of 4-hydroxypiperidine (0.97 g, 9.60 mmol) in anhydrous dimethylformamide (20 mL) at 0°C was added 1-(bromomethyl)-4-methoxybenzene (1.93 g, 9.60 mmol) and triethylamine (2.16 g, 21.4 mmol). The reaction mixture was then warmed to room temperature and stirred overnight. After this time the mixture was concentrated under reduced pressure and the resulting residue was dissolved in ethyl acetate (40 mL), washed with water (20 mL) and brine (20 mL) before being dried over sodium sulfate. The drying agent was filtered off and the filtrate concentrated under reduced pressure. The residue obtained was purified by flash chromatography (silica gel, 0-5% methanol/methylene chloride) to afford 1-(4-methoxybenzyl)piperidin-4-ol as a brown oil (1.70 g, 80%).</textarea>
                 </div>
             </div>
@@ -89,9 +150,53 @@
         </div>
         <!-- /.row -->
 
-        <hr>
+        <hr />
 
         <!-- Call to Action Well -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="well">
+                    <form>
+                        <label for="inputGraph">Graphviz Intermediate Result</label>
+                        <textarea id="inputGraph" rows="15" cols="80" onKeyUp="tryDraw();">
+/* Example */
+digraph {
+    node [rx=5 ry=5 labelStyle="font: 300 14px 'Helvetica Neue', Helvetica"]
+    edge [labelStyle="font: 300 14px 'Helvetica Neue', Helvetica"]
+    A [labelType="html"
+       label="A <span style='font-size:32px'>Big</span> <span style='color:red;'>HTML</span> Source!"];
+    C;
+    E [label="Bold Red Sink" style="fill: #f77; font-weight: bold"];
+    A -&gt; B -&gt; C;
+    B -&gt; D [label="A blue label" labelStyle="fill: #55f; font-weight: bold;"];
+    D -&gt; E [label="A thick red edge" style="stroke: #f77; stroke-width: 2px;" arrowheadStyle="fill: #f77"];
+    C -&gt; E;
+    A -&gt; D [labelType="html" label="A multi-rank <span style='color:blue;'>HTML</span> edge!"];
+}
+                        </textarea>
+                        <!--
+                        <a id="graphLink">Link for this graph</a>
+                        -->
+                    </form>
+                </div>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+
+        <hr />
+
+        <!-- Call to Action Well -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="well">
+                    <svg width=800 height=600>
+                        <g/>
+                    </svg>
+                </div>
+            </div>
+            <!-- /.col-lg-12 -->
+        </div>
+
         <div class="row">
             <div class="col-lg-12">
                 <div class="well text-center">
@@ -113,12 +218,82 @@
     </div>
     <!-- /.container -->
 
-    <!-- jQuery -->
-    <script src="js/jquery.js"></script>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
+    <script>
+        console.log("hello world");
 
+        function graphToURL() {
+            var elems = [window.location.protocol, '//', window.location.host, window.location.pathname, '?'];
+
+            var queryParams = [];
+            if (debugAlignment) {
+                queryParams.push('alignment=' + debugAlignment);
+            }
+            queryParams.push('graph=' + encodeURIComponent(inputGraph.value));
+            elems.push(queryParams.join('&'));
+
+            return elems.join('');
+        }
+
+        var inputGraph = document.getElementById("inputGraph");
+
+        console.log(inputGraph.value);
+
+        var graphLink = d3.select("#graphLink");
+
+        var oldInputGraphValue;
+
+        var graphRE = /[?&]graph=([^&]+)/;
+        var graphMatch = window.location.search.match(graphRE);
+        if (graphMatch) {
+            inputGraph.value = decodeURIComponent(graphMatch[1]);
+        }
+        var debugAlignmentRE = /[?&]alignment=([^&]+)/;
+        var debugAlignmentMatch = window.location.search.match(debugAlignmentRE);
+        var debugAlignment;
+        if (debugAlignmentMatch) debugAlignment = debugAlignmentMatch[1];
+
+
+        var svg = d3.select("svg"),
+        inner = d3.select("svg g"),
+        zoom = d3.behavior.zoom().on("zoom", function() {
+            inner.attr("transform", "translate(" + d3.event.translate + ")" + "scale(" + d3.event.scale + ")");
+        });
+        svg.call(zoom);
+
+        var render = dagreD3.render();
+
+        function tryDraw() {
+            var g;
+            if (oldInputGraphValue !== inputGraph.value) {
+                inputGraph.setAttribute("class", "");
+                oldInputGraphValue = inputGraph.value;
+                try {
+                    g = graphlibDot.read(inputGraph.value);
+                } catch (e) {
+                    inputGraph.setAttribute("class", "error");
+                    throw e;
+                }
+
+
+                graphLink.attr("href", graphToURL());
+
+
+                if (!g.graph().hasOwnProperty("marginx") &&
+                    !g.graph().hasOwnProperty("marginy")) {
+                    g.graph().marginx = 20;
+                    g.graph().marginy = 20;
+                }
+
+                g.graph().transition = function(selection) {
+                    return selection.transition().duration(500);
+                };
+
+
+                d3.select("svg g").call(render, g);
+            }
+        }
+    </script>
 </body>
 
 </html>

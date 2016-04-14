@@ -21,7 +21,7 @@ public class App {
         StringBuilder sb = new StringBuilder();
         try (Stream<String> lines =
                      Files.lines(Paths.get("src/main/resources/public/startbootstrap/index.html"), Charset.defaultCharset())) {
-            lines.forEachOrdered(line -> sb.append(line));
+            lines.forEachOrdered(line -> sb.append(line + "\n"));
         } catch (IOException e) {
             e.printStackTrace();
         }

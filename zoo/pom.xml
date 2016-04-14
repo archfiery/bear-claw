@@ -8,5 +8,33 @@
     <artifactId>com.archfiery.bearclaw</artifactId>
     <version>0.0.1</version>
 
+    <properties>
+        <jdk.version>1.8</jdk.version>
+        <junit.version>4.11</junit.version>
+        <maven-plugin.version>3.5.1</maven-plugin.version>
+        <sparkjava.version>2.3</sparkjava.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-plugin.version}</version>
+                <configuration>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sparkjava</groupId>
+            <artifactId>spark-core</artifactId>
+            <version>${sparkjava.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>
